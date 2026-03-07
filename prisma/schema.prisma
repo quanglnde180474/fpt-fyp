@@ -1,0 +1,124 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Admin users
+model User {
+  id    Int     @id @default(autoincrement())
+  email String  @unique
+  passwordHash String
+  fullName String
+  role  String  @default("admin") // "admin", "editor"
+  active Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  pages Page[]
+  announcements Announcement[]
+
+  @@map("users")
+}
+
+// Documentation pages (CMS)
+model Page {
+  id    Int     @id @default(autoincrement())
+  slug  String  @unique
+  title String
+  content String // Markdown content
+  category String @default("docs") // "docs", "handbook", "guide"
+  published Boolean @default(false)
+  authorId Int
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+  @@index([category])
+  @@map("pages")
+}
+
+// Courses/Classes
+model Course {
+  id    Int     @id @default(autoincrement())
+  code  String  @unique
+  name  String
+  description String?
+  credits Int
+  prerequisites String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  schedules Schedule[]
+
+  @@index([code])
+  @@map("courses")
+}
+
+// Course schedules
+model Schedule {
+  id    Int     @id @default(autoincrement())
+  courseId Int
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  day   String // "Monday", "Tuesday", etc.
+  startTime String // "07:30"
+  endTime String   // "09:00"
+  room  String
+  capacity Int @default(30)
+
+  @@index([courseId])
+  @@map("schedules")
+}
+
+// Student services (FAP, FLM, etc.)
+model Service {
+  id    Int     @id @default(autoincrement())
+  name  String
+  description String
+  category String // "academic", "support", "it"
+  iconUrl String?
+  link  String?
+  createdAt DateTime @default(now())
+
+  @@index([category])
+  @@map("services")
+}
+
+// Announcements
+model Announcement {
+  id    Int     @id @default(autoincrement())
+  title String
+  content String
+  imageUrl String?
+  category String @default("general")
+  authorId Int
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  publishedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@index([publishedAt])
+  @@map("announcements")
+}
+
+// FAQ entries
+model FAQ {
+  id    Int     @id @default(autoincrement())
+  question String
+  answer  String
+  category String
+  order   Int @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([category])
+  @@index([order])
+  @@map("faqs")
+}

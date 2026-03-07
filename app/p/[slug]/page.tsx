@@ -4,16 +4,7 @@ import { notFound } from "next/navigation";
 
 const sql = neon(process.env.DATABASE_URL!);
 
-export const revalidate = 3600; // re-render at most once per hour
-
-export async function generateStaticParams() {
-  try {
-    const rows = await sql`SELECT slug FROM pages WHERE published = true`;
-    return rows.map((r) => ({ slug: r.slug as string }));
-  } catch {
-    return [];
-  }
-}
+export const dynamic = "force-dynamic";
 
 export default async function PublicPage({
   params,

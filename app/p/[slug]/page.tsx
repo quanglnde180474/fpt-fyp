@@ -46,8 +46,8 @@ export default async function PublicPage({
             prose-blockquote:border-l-primary prose-blockquote:text-muted-foreground
             prose-li:text-muted-foreground
             prose-img:max-w-full prose-img:rounded-lg
-            [&_table]:w-full [&_table]:overflow-x-auto [&_table]:block
-            overflow-x-hidden"
+            break-words
+            [&_table]:w-full [&_table]:overflow-x-auto [&_table]:block [&_table]:max-w-full"
             dangerouslySetInnerHTML={{
               __html: sanitizeQuillHtml(page.content),
             }}

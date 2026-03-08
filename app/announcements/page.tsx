@@ -5,6 +5,8 @@ import { Megaphone, ChevronRight } from "lucide-react";
 
 const sql = neon(process.env.DATABASE_URL!);
 
+export const revalidate = 0; // Disable cache for real-time updates
+
 const CATEGORY_LABELS: Record<string, string> = {
   general: "Chung",
   academic: "Học tập",

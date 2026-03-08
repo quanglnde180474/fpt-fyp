@@ -25,6 +25,7 @@ export async function createAnnouncement(formData: FormData) {
   `
 
   revalidatePath('/admin/announcements')
+  revalidatePath('/announcements')
   redirect('/admin/announcements')
 }
 
@@ -50,6 +51,7 @@ export async function updateAnnouncement(id: number, formData: FormData) {
   `
 
   revalidatePath('/admin/announcements')
+  revalidatePath('/announcements')
   redirect('/admin/announcements')
 }
 
@@ -57,6 +59,9 @@ export async function deleteAnnouncement(id: number) {
   const session = await verifySession()
   if (!session) redirect('/admin/login')
 
+  
+  revalidatePath('/admin/announcements')
+  revalidatePath('/announcements')
   await sql`DELETE FROM announcements WHERE id = ${id}`
 
   revalidatePath('/admin/announcements')

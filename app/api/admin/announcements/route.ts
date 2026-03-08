@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifySession } from '@/lib/auth'
 import { getAllAnnouncements, createAnnouncement } from '@/lib/services/announcements.service'
+import { revalidatePath } from 'next/cache'
 
 export async function GET() {
   const session = await verifySession()
@@ -29,5 +30,6 @@ export async function POST(req: NextRequest) {
     authorId: Number(session.userId),
   })
 
+  revalidatePath('/announcements')
   return NextResponse.json(announcement, { status: 201 })
 }

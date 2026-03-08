@@ -80,8 +80,16 @@ export default async function AnnouncementDetailPage({
             prose-headings:font-bold prose-headings:text-foreground
             prose-p:text-muted-foreground prose-p:leading-relaxed
             prose-a:text-primary prose-a:no-underline hover:prose-a:underline
-            prose-li:text-muted-foreground"
-            dangerouslySetInnerHTML={{ __html: sanitizeQuillHtml(ann.content) }}
+            prose-code:bg-muted prose-code:px-1 prose-code:rounded
+            prose-pre:bg-muted prose-pre:border prose-pre:border-border
+            prose-blockquote:border-l-primary prose-blockquote:text-muted-foreground
+            prose-li:text-muted-foreground
+            prose-img:max-w-full prose-img:rounded-lg
+            [&_table]:w-full [&_table]:overflow-x-auto [&_table]:block
+            overflow-x-hidden"
+            dangerouslySetInnerHTML={{
+              __html: sanitizeQuillHtml(ann.content),
+            }}
           />
         </div>
       </section>

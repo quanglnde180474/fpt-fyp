@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifySession } from '@/lib/auth'
 import { updateAnnouncement, deleteAnnouncement } from '@/lib/services/announcements.service'
+import { revalidatePath } from 'next/cache'
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await verifySession()
@@ -22,6 +23,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const announcement = await updateAnnouncement(numId, { title, content, category, published: !!published })
   if (!announcement) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
+  revalidatePath('/announcements')
   return NextResponse.json(announcement)
 }
 
@@ -36,5 +38,6 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   }
 
   await deleteAnnouncement(numId)
+  revalidatePath('/announcements')
   return NextResponse.json({ success: true })
 }

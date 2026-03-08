@@ -23,6 +23,12 @@ export function Header() {
               Tin tức
             </Link>
             <Link
+              href="/qna"
+              className="text-sm text-muted-foreground hover:text-foreground transition"
+            >
+              Q&A
+            </Link>
+            <Link
               href="/student-portal"
               className="text-sm text-muted-foreground hover:text-foreground transition"
             >

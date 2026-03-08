@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -128,6 +129,37 @@
 article img { max-width: 100%; height: auto; }
 article iframe { max-width: 100%; }
 article pre { overflow-x: auto; white-space: pre-wrap; word-break: break-word; }
+
+/* ── Quill 2.x rendered HTML fixes ──────────────────────────────────────── */
+/* Quill outputs ALL lists as <ol> with data-list="bullet"|"ordered"|"checked" */
+article ol {
+  padding-left: 1.75rem;
+  margin: 0.5rem 0;
+}
+article ol li[data-list="bullet"] {
+  list-style-type: disc;
+}
+article ol li[data-list="ordered"] {
+  list-style-type: decimal;
+}
+article ol li[data-list="checked"],
+article ol li[data-list="unchecked"] {
+  list-style-type: none;
+}
+/* Quill indent levels */
+article li.ql-indent-1 { padding-left: 1.5em; }
+article li.ql-indent-2 { padding-left: 3em; }
+article li.ql-indent-3 { padding-left: 4.5em; }
+article li.ql-indent-4 { padding-left: 6em; }
+article li.ql-indent-5 { padding-left: 7.5em; }
+/* Quill heading spacing — supplemental (prose handles most) */
+article h1 { font-size: 1.75rem; font-weight: 700; margin-top: 1.5rem; }
+article h2 { font-size: 1.4rem;  font-weight: 700; margin-top: 1.25rem; }
+article h3 { font-size: 1.15rem; font-weight: 700; margin-top: 1rem; }
+/* Override Quill inline color/background so dark mode works */
+article span[style] { color: inherit !important; background-color: inherit !important; }
+article strong[style] { color: inherit !important; background-color: inherit !important; }
+article u[style] { background-color: inherit !important; }
 
 /* Quill editor overrides */
 .quill-wrapper .ql-toolbar {

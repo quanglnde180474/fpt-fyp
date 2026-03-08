@@ -3,6 +3,7 @@ import { Header } from "@/components/header";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { sanitizeQuillHtml } from "@/lib/utils";
 
 const sql = neon(process.env.DATABASE_URL!);
 
@@ -80,7 +81,7 @@ export default async function AnnouncementDetailPage({
             prose-p:text-muted-foreground prose-p:leading-relaxed
             prose-a:text-primary prose-a:no-underline hover:prose-a:underline
             prose-li:text-muted-foreground"
-            dangerouslySetInnerHTML={{ __html: ann.content }}
+            dangerouslySetInnerHTML={{ __html: sanitizeQuillHtml(ann.content) }}
           />
         </div>
       </section>

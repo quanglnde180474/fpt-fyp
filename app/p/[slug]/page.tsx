@@ -1,6 +1,7 @@
 import { neon } from "@neondatabase/serverless";
 import { Header } from "@/components/header";
 import { notFound } from "next/navigation";
+import { sanitizeQuillHtml } from "@/lib/utils";
 
 const sql = neon(process.env.DATABASE_URL!);
 
@@ -47,7 +48,9 @@ export default async function PublicPage({
             prose-img:max-w-full prose-img:rounded-lg
             [&_table]:w-full [&_table]:overflow-x-auto [&_table]:block
             overflow-x-hidden"
-            dangerouslySetInnerHTML={{ __html: page.content }}
+            dangerouslySetInnerHTML={{
+              __html: sanitizeQuillHtml(page.content),
+            }}
           />
         </div>
       </section>

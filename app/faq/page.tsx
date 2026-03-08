@@ -8,7 +8,11 @@ const sql = neon(process.env.DATABASE_URL!);
 export default async function FAQPage() {
   let faqs: any[] = [];
   try {
-    faqs = await sql`SELECT * FROM faqs ORDER BY category, "order" ASC`;
+    faqs = await sql`
+      SELECT * FROM faqs 
+      WHERE category != 'qna'
+      ORDER BY category, "order" ASC
+    `;
   } catch (e) {
     console.error("Error fetching FAQs:", e);
   }

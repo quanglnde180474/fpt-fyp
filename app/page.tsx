@@ -38,7 +38,7 @@ export default function Home() {
                   <Link href="/student-portal">Khám phá ngay</Link>
                 </Button>
                 <Button asChild variant="outline" size="lg">
-                  <Link href="/docs">Tài liệu</Link>
+                  <Link href="/student-portal">Tài liệu</Link>
                 </Button>
               </div>
             </div>
@@ -284,7 +284,10 @@ export default function Home() {
             </div>
           </div>
           <div className="border-t border-border pt-8 text-center text-sm text-muted-foreground">
-            <p>&copy; 2024 FPT University. All rights reserved.</p>
+            <p>
+              &copy; {new Date().getFullYear()} FPT First Year Playbook. All
+              rights reserved.
+            </p>
           </div>
         </div>
       </footer>

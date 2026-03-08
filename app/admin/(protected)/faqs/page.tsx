@@ -9,7 +9,11 @@ const sql = neon(process.env.DATABASE_URL!);
 
 async function getFaqs() {
   try {
-    const result = await sql`SELECT * FROM faqs ORDER BY category, "order" ASC`;
+    const result = await sql`
+      SELECT * FROM faqs 
+      WHERE category != 'qna'
+      ORDER BY category, "order" ASC
+    `;
     return result as any[];
   } catch (error) {
     console.error("Error fetching FAQs:", error);

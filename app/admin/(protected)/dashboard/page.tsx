@@ -10,7 +10,7 @@ async function getDashboardStats() {
       sql`SELECT COUNT(*) as count FROM pages`,
       sql`SELECT COUNT(*) as count FROM courses`,
       sql`SELECT COUNT(*) as count FROM announcements WHERE "publishedAt" IS NOT NULL`,
-      sql`SELECT COUNT(*) as count FROM faqs`,
+      sql`SELECT COUNT(*) as count FROM faqs WHERE category != 'qna'`,
     ]);
 
     return {

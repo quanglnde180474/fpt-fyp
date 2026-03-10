@@ -1,40 +1,15 @@
-import { neon } from "@neondatabase/serverless";
+import { getAllQuestions } from "@/lib/services/qna.service";
 import { Header } from "@/components/header";
 import Link from "next/link";
 import { MessageSquare, Plus, Eye, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const sql = neon(process.env.DATABASE_URL!);
-
-export const revalidate = 0; // Disable cache for real-time updates
+export const dynamic = "force-dynamic";
 
 export default async function QnAPage() {
   let questions: any[] = [];
   try {
-    const faqs = await sql`
-      SELECT id, question, answer, "createdAt"
-      FROM faqs
-      WHERE category = 'qna'
-      ORDER BY "createdAt" DESC
-    `;
-
-    // Parse metadata from answer field
-    questions = faqs.map((faq: any) => {
-      let metadata;
-      try {
-        metadata = JSON.parse(faq.answer);
-      } catch {
-        metadata = { authorName: "Unknown", views: 0, answers: [] };
-      }
-      return {
-        id: faq.id,
-        title: faq.question,
-        authorName: metadata.authorName || "Unknown",
-        views: metadata.views || 0,
-        answerCount: metadata.answers?.length || 0,
-        createdAt: faq.createdAt,
-      };
-    });
+    questions = await getAllQuestions();
   } catch (e) {
     console.error("Error fetching questions:", e);
   }

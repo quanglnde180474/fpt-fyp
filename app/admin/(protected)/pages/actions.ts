@@ -1,13 +1,11 @@
 'use server'
 
-import { neon } from '@neondatabase/serverless'
+import { createPage, updatePage, deletePage } from '@/lib/services/pages.service'
 import { verifySession } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 
-const sql = neon(process.env.DATABASE_URL!)
-
-export async function createPage(formData: FormData) {
+export async function createPageAction(formData: FormData) {
   const session = await verifySession()
   if (!session) redirect('/admin/login')
 
@@ -21,16 +19,14 @@ export async function createPage(formData: FormData) {
     throw new Error('Title, slug and content are required')
   }
 
-  await sql`
-    INSERT INTO pages (title, slug, content, category, published, "authorId")
-    VALUES (${title}, ${slug}, ${content}, ${category}, ${published}, ${Number(session.userId)})
-  `
+  await createPage({ title, slug, content, category, published, authorId: Number(session.userId) })
 
   revalidatePath('/admin/pages')
+  revalidatePath('/student-portal')
   redirect('/admin/pages')
 }
 
-export async function updatePage(id: number, formData: FormData) {
+export async function updatePageAction(id: number, formData: FormData) {
   const session = await verifySession()
   if (!session) redirect('/admin/login')
 
@@ -40,23 +36,21 @@ export async function updatePage(id: number, formData: FormData) {
   const category = formData.get('category') as string
   const published = formData.get('published') === 'on'
 
-  await sql`
-    UPDATE pages
-    SET title = ${title}, slug = ${slug}, content = ${content},
-        category = ${category}, published = ${published}, "updatedAt" = NOW()
-    WHERE id = ${id}
-  `
+  await updatePage(id, { title, slug, content, category, published })
 
   revalidatePath('/admin/pages')
   revalidatePath(`/admin/pages/${id}`)
+  revalidatePath(`/p/${slug}`)
+  revalidatePath('/student-portal')
   redirect('/admin/pages')
 }
 
-export async function deletePage(id: number) {
+export async function deletePageAction(id: number) {
   const session = await verifySession()
   if (!session) redirect('/admin/login')
 
-  await sql`DELETE FROM pages WHERE id = ${id}`
+  await deletePage(id)
 
   revalidatePath('/admin/pages')
+  revalidatePath('/student-portal')
 }

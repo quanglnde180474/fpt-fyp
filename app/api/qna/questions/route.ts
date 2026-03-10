@@ -1,36 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { neon } from '@neondatabase/serverless'
-
-const sql = neon(process.env.DATABASE_URL!)
+import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
+import { getAllQuestions, createQuestion } from '@/lib/services/qna.service'
+import type { NextRequest } from 'next/server'
 
 // GET all Q&A questions (public)
 export async function GET() {
   try {
-    const questions = await sql`
-      SELECT id, question, answer, "createdAt"
-      FROM faqs
-      WHERE category = 'qna'
-      ORDER BY "createdAt" DESC
-    `
-
-    // Parse the answer field which stores JSON metadata
-    const questionsWithParsedAnswers = questions.map((q: any) => {
-      let metadata
-      try {
-        metadata = q.answer ? JSON.parse(q.answer) : { answers: [] }
-      } catch {
-        metadata = { answers: [] }
-      }
-      return {
-        id: q.id,
-        title: q.question,
-        createdAt: q.createdAt,
-        answerCount: metadata.answers?.length || 0,
-        ...metadata,
-      }
-    })
-
-    return NextResponse.json(questionsWithParsedAnswers)
+    const questions = await getAllQuestions()
+    return NextResponse.json(questions)
   } catch (error) {
     console.error('Error fetching questions:', error)
     return NextResponse.json({ error: 'Failed to fetch questions' }, { status: 500 })
@@ -50,23 +27,9 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Store metadata in the answer field
-    const metadata = {
-      content,
-      authorName,
-      authorEmail: authorEmail || null,
-      views: 0,
-      answers: [],
-    }
-
-    // Create FAQ entry with category 'qna'
-    const [question] = await sql`
-      INSERT INTO faqs (question, answer, category, "order", "createdAt")
-      VALUES (${title}, ${JSON.stringify(metadata)}, 'qna', 0, NOW())
-      RETURNING id, question, answer, "createdAt"
-    `
-
-    return NextResponse.json({ id: question.id, title: question.question, ...metadata, createdAt: question.createdAt }, { status: 201 })
+    const question = await createQuestion({ title, content, authorName, authorEmail })
+    revalidatePath('/qna')
+    return NextResponse.json(question, { status: 201 })
   } catch (error) {
     console.error('Error creating question:', error)
     return NextResponse.json({ error: 'Failed to create question' }, { status: 500 })

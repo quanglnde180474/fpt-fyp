@@ -1,4 +1,4 @@
-import { neon } from "@neondatabase/serverless";
+import postgres from 'postgres';
 
 process.loadEnvFile(new URL('../.env', import.meta.url));
 
@@ -8,7 +8,28 @@ if (!DATABASE_URL) {
   throw new Error("DATABASE_URL environment variable is not set");
 }
 
-const sql = neon(DATABASE_URL);
+function parseConnectionString(connStr: string) {
+  const withoutScheme = connStr.replace(/^postgres(?:ql)?:\/\//, '')
+  const atIdx = withoutScheme.lastIndexOf('@')
+  if (atIdx === -1) throw new Error('Invalid DATABASE_URL: missing @')
+  const credentialsPart = withoutScheme.slice(0, atIdx)
+  const hostPart = withoutScheme.slice(atIdx + 1)
+  const colonIdx = credentialsPart.indexOf(':')
+  const user = colonIdx >= 0 ? credentialsPart.slice(0, colonIdx) : credentialsPart
+  const password = colonIdx >= 0 ? credentialsPart.slice(colonIdx + 1) : ''
+  const queryStart = hostPart.indexOf('?')
+  const hostAndDb = queryStart >= 0 ? hostPart.slice(0, queryStart) : hostPart
+  const slashIdx = hostAndDb.indexOf('/')
+  const hostPort = slashIdx >= 0 ? hostAndDb.slice(0, slashIdx) : hostAndDb
+  const database = slashIdx >= 0 ? hostAndDb.slice(slashIdx + 1) : 'postgres'
+  const lastColon = hostPort.lastIndexOf(':')
+  const host = lastColon >= 0 ? hostPort.slice(0, lastColon) : hostPort
+  const port = lastColon >= 0 ? parseInt(hostPort.slice(lastColon + 1), 10) : 5432
+  return { host, port, user, password, database }
+}
+
+const { host, port, user, password, database } = parseConnectionString(DATABASE_URL)
+const sql = postgres({ host, port, user, password, database, ssl: 'require', max: 1 });
 
 async function initializeDatabase() {
   try {

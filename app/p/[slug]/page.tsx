@@ -1,11 +1,9 @@
-import { neon } from "@neondatabase/serverless";
+import { getPageBySlug } from "@/lib/services/pages.service";
 import { Header } from "@/components/header";
 import { notFound } from "next/navigation";
 import { sanitizeQuillHtml } from "@/lib/utils";
 
-const sql = neon(process.env.DATABASE_URL!);
-
-export const dynamic = "force-dynamic";
+export const revalidate = 600;
 
 export default async function PublicPage({
   params,
@@ -14,16 +12,13 @@ export default async function PublicPage({
 }) {
   const { slug } = await params;
 
-  const result =
-    await sql`SELECT * FROM pages WHERE slug = ${slug} AND published = true`;
-  const page = result[0];
+  const page = await getPageBySlug(slug);
   if (!page) notFound();
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
 
-      {/* Page Header */}
       <div className="border-b border-border bg-muted/30 px-4 py-12 sm:px-6 lg:px-8">
         <div className="container mx-auto max-w-3xl">
           <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-3">
@@ -33,7 +28,6 @@ export default async function PublicPage({
         </div>
       </div>
 
-      {/* Content */}
       <section className="px-4 py-12 sm:px-6 lg:px-8">
         <div className="container mx-auto max-w-3xl">
           <article

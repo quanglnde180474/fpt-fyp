@@ -1,5 +1,5 @@
-import { neon } from "@neondatabase/serverless";
-import { updateFaq } from "../actions";
+import sql from "@/lib/db";
+import { updateFaqAction } from "../actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,21 +9,20 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 
-const sql = neon(process.env.DATABASE_URL!);
-
 export default async function EditFaqPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const result = await sql`SELECT * FROM faqs WHERE id = ${Number(id)}`;
+  const result =
+    await sql`SELECT id, question, answer, category, "order" FROM faqs WHERE id = ${Number(id)}`;
   const faq = result[0];
   if (!faq) notFound();
 
   const action = async (formData: FormData) => {
     "use server";
-    await updateFaq(Number(id), formData);
+    await updateFaqAction(Number(id), formData);
   };
 
   return (

@@ -1,11 +1,10 @@
-import { neon } from "@neondatabase/serverless";
+import sql from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { PageForm } from "@/components/admin/page-form";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 
-const sql = neon(process.env.DATABASE_URL!);
 
 export default async function EditPagePage({
   params,
@@ -15,7 +14,7 @@ export default async function EditPagePage({
   const { id } = await params;
   const numId = Number(id);
   if (!Number.isInteger(numId) || numId <= 0) notFound();
-  const result = await sql`SELECT * FROM pages WHERE id = ${numId}`;
+  const result = await sql`SELECT id, title, slug, content, category, published FROM pages WHERE id = ${numId}`;
   const page = result[0];
   if (!page) notFound();
 

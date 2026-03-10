@@ -1,11 +1,11 @@
-import { neon } from "@neondatabase/serverless";
+import { getPublishedAnnouncementById } from "@/lib/services/announcements.service";
 import { Header } from "@/components/header";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { sanitizeQuillHtml } from "@/lib/utils";
 
-const sql = neon(process.env.DATABASE_URL!);
+export const revalidate = 300;
 
 const CATEGORY_LABELS: Record<string, string> = {
   general: "Chung",
@@ -30,16 +30,7 @@ export default async function AnnouncementDetailPage({
   const numId = Number(id);
   if (!Number.isInteger(numId) || numId <= 0) notFound();
 
-  let ann: any = null;
-  try {
-    const result = await sql`
-      SELECT * FROM announcements
-      WHERE id = ${numId} AND "publishedAt" IS NOT NULL
-    `;
-    ann = result[0];
-  } catch (e) {
-    console.error(e);
-  }
+  const ann = await getPublishedAnnouncementById(numId);
   if (!ann) notFound();
 
   return (

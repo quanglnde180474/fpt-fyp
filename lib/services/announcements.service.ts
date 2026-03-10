@@ -1,9 +1,33 @@
-import { neon } from '@neondatabase/serverless'
+import sql from '@/lib/db'
 
-const sql = neon(process.env.DATABASE_URL!)
-
+/** Admin: all announcements, no content */
 export async function getAllAnnouncements() {
-  return sql`SELECT * FROM announcements ORDER BY "createdAt" DESC`
+  return sql`SELECT id, title, category, "publishedAt", "createdAt", "updatedAt", "authorId" FROM announcements ORDER BY "createdAt" DESC`
+}
+
+/** Public list — strips HTML and returns a 200-char excerpt */
+export async function getPublishedAnnouncements() {
+  return sql`
+    SELECT
+      id,
+      title,
+      category,
+      "publishedAt",
+      LEFT(regexp_replace(content, '<[^>]+>', ' ', 'g'), 200) AS content
+    FROM announcements
+    WHERE "publishedAt" IS NOT NULL
+    ORDER BY "publishedAt" DESC
+  `
+}
+
+/** Public detail — needs full content */
+export async function getPublishedAnnouncementById(id: number) {
+  const rows = await sql`
+    SELECT id, title, category, content, "publishedAt"
+    FROM announcements
+    WHERE id = ${id} AND "publishedAt" IS NOT NULL
+  `
+  return rows[0] ?? null
 }
 
 export async function getAnnouncementById(id: number) {
@@ -35,13 +59,13 @@ export async function updateAnnouncement(id: number, data: {
   category: string
   published: boolean
 }) {
-  const existing = await sql`SELECT "publishedAt" FROM announcements WHERE id = ${id}`
-  const alreadyPublished = existing[0]?.publishedAt
-
   const rows = await sql`
     UPDATE announcements
     SET title = ${data.title}, content = ${data.content}, category = ${data.category},
-        "publishedAt" = ${data.published ? (alreadyPublished ?? new Date().toISOString()) : null},
+        "publishedAt" = CASE
+          WHEN ${data.published} THEN COALESCE("publishedAt", NOW())
+          ELSE NULL
+        END,
         "updatedAt" = NOW()
     WHERE id = ${id}
     RETURNING *

@@ -1,4 +1,4 @@
-import { neon } from "@neondatabase/serverless";
+import { getQuestionById } from "@/lib/services/qna.service";
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Eye, MessageCircle, User } from "lucide-react";
@@ -6,9 +6,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AnswerForm } from "./answer-form";
 
-const sql = neon(process.env.DATABASE_URL!);
-
-export const revalidate = 0; // Disable cache for real-time updates
+export const revalidate = 300;
 
 export default async function QuestionDetailPage({
   params,
@@ -17,54 +15,12 @@ export default async function QuestionDetailPage({
 }) {
   const { id } = await params;
   const questionId = parseInt(id);
+  if (isNaN(questionId)) notFound();
 
-  if (isNaN(questionId)) {
-    notFound();
-  }
+  const question = await getQuestionById(questionId);
+  if (!question) notFound();
 
-  let question: any = null;
-  let answers: any[] = [];
-
-  try {
-    const [faqData] = await sql`
-      SELECT id, question, answer, "createdAt"
-      FROM faqs
-      WHERE id = ${questionId} AND category = 'qna'
-    `;
-
-    if (!faqData) {
-      notFound();
-    }
-
-    // Parse metadata from answer field
-    let metadata;
-    try {
-      metadata = JSON.parse(faqData.answer);
-    } catch {
-      metadata = {
-        content: "",
-        authorName: "Unknown",
-        authorEmail: null,
-        views: 0,
-        answers: [],
-      };
-    }
-
-    question = {
-      id: faqData.id,
-      title: faqData.question,
-      content: metadata.content || "",
-      authorName: metadata.authorName || "Unknown",
-      authorEmail: metadata.authorEmail,
-      views: metadata.views || 0,
-      createdAt: faqData.createdAt,
-    };
-
-    answers = metadata.answers || [];
-  } catch (e) {
-    console.error("Error fetching question:", e);
-    notFound();
-  }
+  const answers = question.answers ?? [];
 
   return (
     <div className="min-h-screen bg-background">

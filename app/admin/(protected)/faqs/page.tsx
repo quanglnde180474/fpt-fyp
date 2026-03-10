@@ -1,16 +1,15 @@
-import { neon } from "@neondatabase/serverless";
+import sql from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import { Plus, Edit2 } from "lucide-react";
-import { deleteFaq } from "./actions";
-
-const sql = neon(process.env.DATABASE_URL!);
+import { deleteFaqAction } from "./actions";
 
 async function getFaqs() {
   try {
     const result = await sql`
-      SELECT * FROM faqs 
+      SELECT id, question, answer, category, "order"
+      FROM faqs 
       WHERE category != 'qna'
       ORDER BY category, "order" ASC
     `;
@@ -102,7 +101,7 @@ export default async function FAQsAdminPage() {
                         <form
                           action={async () => {
                             "use server";
-                            await deleteFaq(faq.id);
+                            await deleteFaqAction(faq.id);
                           }}
                         >
                           <Button

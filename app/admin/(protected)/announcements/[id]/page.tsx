@@ -1,11 +1,10 @@
-import { neon } from "@neondatabase/serverless";
+import sql from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { AnnouncementForm } from "@/components/admin/announcement-form";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 
-const sql = neon(process.env.DATABASE_URL!);
 
 export default async function EditAnnouncementPage({
   params,
@@ -15,7 +14,7 @@ export default async function EditAnnouncementPage({
   const { id } = await params;
   const numId = Number(id);
   if (!Number.isInteger(numId) || numId <= 0) notFound();
-  const result = await sql`SELECT * FROM announcements WHERE id = ${numId}`;
+  const result = await sql`SELECT id, title, category, content, "publishedAt" FROM announcements WHERE id = ${numId}`;
   const ann = result[0];
   if (!ann) notFound();
 

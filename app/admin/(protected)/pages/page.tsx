@@ -1,15 +1,14 @@
-import { neon } from "@neondatabase/serverless";
+import sql from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import { Plus, Edit2, Trash2, Eye } from "lucide-react";
-import { deletePage } from "./actions";
-
-const sql = neon(process.env.DATABASE_URL!);
+import { deletePageAction } from "./actions";
 
 async function getPages() {
   try {
-    const result = await sql`SELECT * FROM pages ORDER BY "updatedAt" DESC`;
+    const result =
+      await sql`SELECT id, title, slug, category, published, "updatedAt" FROM pages ORDER BY "updatedAt" DESC`;
     return result as any[];
   } catch (error) {
     console.error("Error fetching pages:", error);
@@ -224,7 +223,7 @@ export default async function PagesAdminPage() {
                         <form
                           action={async () => {
                             "use server";
-                            await deletePage(page.id);
+                            await deletePageAction(page.id);
                           }}
                         >
                           <Button

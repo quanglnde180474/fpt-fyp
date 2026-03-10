@@ -1,11 +1,9 @@
-import { neon } from "@neondatabase/serverless";
+import { getPublishedAnnouncements } from "@/lib/services/announcements.service";
 import { Header } from "@/components/header";
 import Link from "next/link";
 import { Megaphone, ChevronRight } from "lucide-react";
 
-const sql = neon(process.env.DATABASE_URL!);
-
-export const revalidate = 0; // Disable cache for real-time updates
+export const dynamic = "force-dynamic";
 
 const CATEGORY_LABELS: Record<string, string> = {
   general: "Chung",
@@ -24,12 +22,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 export default async function AnnouncementsPage() {
   let announcements: any[] = [];
   try {
-    announcements = await sql`
-      SELECT id, title, category, content, "publishedAt"
-      FROM announcements
-      WHERE "publishedAt" IS NOT NULL
-      ORDER BY "publishedAt" DESC
-    `;
+    announcements = (await getPublishedAnnouncements()) as any[];
   } catch (e) {
     console.error("Error fetching announcements:", e);
   }
@@ -84,14 +77,9 @@ export default async function AnnouncementsPage() {
                     <h2 className="font-semibold text-foreground group-hover:text-primary transition line-clamp-1">
                       {ann.title}
                     </h2>
-                    <p
-                      className="text-sm text-muted-foreground mt-1 line-clamp-2"
-                      dangerouslySetInnerHTML={{
-                        __html:
-                          ann.content?.replace(/<[^>]+>/g, " ").slice(0, 120) +
-                          "…",
-                      }}
-                    />
+                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                      {ann.content}…
+                    </p>
                   </div>
                   <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition shrink-0 mt-1" />
                 </Link>

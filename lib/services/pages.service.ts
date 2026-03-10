@@ -1,13 +1,39 @@
-import { neon } from '@neondatabase/serverless'
-
-const sql = neon(process.env.DATABASE_URL!)
+import sql from '@/lib/db'
 
 export async function getAllPages() {
-  return sql`SELECT * FROM pages ORDER BY "updatedAt" DESC`
+  return sql`SELECT id, title, slug, category, published, "authorId", "createdAt", "updatedAt" FROM pages ORDER BY "updatedAt" DESC`
+}
+
+export async function getPublishedPages(): Promise<Record<string, any[]>> {
+  const rows = await sql`
+    SELECT id, title, slug, category, "updatedAt"
+    FROM pages
+    WHERE published = true
+    ORDER BY category, "updatedAt" DESC
+  `
+  const grouped: Record<string, any[]> = {}
+  for (const row of rows) {
+    const cat = row.category as string
+    if (!grouped[cat]) grouped[cat] = []
+    grouped[cat].push(row)
+  }
+  return grouped
 }
 
 export async function getPageById(id: number) {
-  const rows = await sql`SELECT * FROM pages WHERE id = ${id}`
+  const rows = await sql`
+    SELECT id, title, slug, content, category, published, "authorId", "updatedAt"
+    FROM pages WHERE id = ${id}
+  `
+  return rows[0] ?? null
+}
+
+export async function getPageBySlug(slug: string) {
+  const rows = await sql`
+    SELECT id, title, slug, content, category, "updatedAt"
+    FROM pages
+    WHERE slug = ${slug} AND published = true
+  `
   return rows[0] ?? null
 }
 

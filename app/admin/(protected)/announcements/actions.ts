@@ -1,68 +1,60 @@
 'use server'
 
-import { neon } from '@neondatabase/serverless'
+import {
+  createAnnouncement,
+  updateAnnouncement,
+  deleteAnnouncement,
+} from '@/lib/services/announcements.service'
 import { verifySession } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 
-const sql = neon(process.env.DATABASE_URL!)
-
-export async function createAnnouncement(formData: FormData) {
+export async function createAnnouncementAction(formData: FormData) {
   const session = await verifySession()
   if (!session) redirect('/admin/login')
 
   const title = formData.get('title') as string
   const content = formData.get('content') as string
   const category = formData.get('category') as string
-  const publish = formData.get('published') === 'on'
+  const published = formData.get('published') === 'on'
 
-  await sql`
-    INSERT INTO announcements (title, content, category, "authorId", "publishedAt")
-    VALUES (
-      ${title}, ${content}, ${category}, ${Number(session.userId)},
-      ${publish ? new Date().toISOString() : null}
-    )
-  `
+  await createAnnouncement({
+    title,
+    content,
+    category,
+    published,
+    authorId: Number(session.userId),
+  })
 
   revalidatePath('/admin/announcements')
   revalidatePath('/announcements')
   redirect('/admin/announcements')
 }
 
-export async function updateAnnouncement(id: number, formData: FormData) {
+export async function updateAnnouncementAction(id: number, formData: FormData) {
   const session = await verifySession()
   if (!session) redirect('/admin/login')
 
   const title = formData.get('title') as string
   const content = formData.get('content') as string
   const category = formData.get('category') as string
-  const publish = formData.get('published') === 'on'
+  const published = formData.get('published') === 'on'
 
-  // Fetch existing to preserve original publishedAt if already published
-  const existing = await sql`SELECT "publishedAt" FROM announcements WHERE id = ${id}`
-  const alreadyPublished = existing[0]?.publishedAt
-
-  await sql`
-    UPDATE announcements
-    SET title = ${title}, content = ${content}, category = ${category},
-        "publishedAt" = ${publish ? (alreadyPublished ?? new Date().toISOString()) : null},
-        "updatedAt" = NOW()
-    WHERE id = ${id}
-  `
+  await updateAnnouncement(id, { title, content, category, published })
 
   revalidatePath('/admin/announcements')
+  revalidatePath(`/admin/announcements/${id}`)
   revalidatePath('/announcements')
+  revalidatePath(`/announcements/${id}`)
   redirect('/admin/announcements')
 }
 
-export async function deleteAnnouncement(id: number) {
+export async function deleteAnnouncementAction(id: number) {
   const session = await verifySession()
   if (!session) redirect('/admin/login')
 
-  
-  revalidatePath('/admin/announcements')
-  revalidatePath('/announcements')
-  await sql`DELETE FROM announcements WHERE id = ${id}`
+  await deleteAnnouncement(id)
 
   revalidatePath('/admin/announcements')
+  revalidatePath('/announcements')
 }

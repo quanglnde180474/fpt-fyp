@@ -1,4 +1,4 @@
-import { createFaq } from "../actions";
+import { createFaqAction } from "../actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,7 +31,7 @@ export default function NewFaqPage() {
             <CardTitle>FAQ Details</CardTitle>
           </CardHeader>
           <CardContent>
-            <form action={createFaq} className="space-y-6">
+            <form action={createFaqAction} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="question">Question</Label>
                 <Input

@@ -1,16 +1,15 @@
-import { neon } from "@neondatabase/serverless";
+import sql from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import { Plus, Edit2, Trash2 } from "lucide-react";
-import { deleteAnnouncement } from "./actions";
-
-const sql = neon(process.env.DATABASE_URL!);
+import { deleteAnnouncementAction } from "./actions";
 
 async function getAnnouncements() {
   try {
     const result = await sql`
-      SELECT * FROM announcements ORDER BY "createdAt" DESC
+      SELECT id, title, category, "publishedAt", "createdAt"
+      FROM announcements ORDER BY "createdAt" DESC
     `;
     return result as any[];
   } catch (error) {
@@ -120,7 +119,7 @@ export default async function AnnouncementsAdminPage() {
                         <form
                           action={async () => {
                             "use server";
-                            await deleteAnnouncement(ann.id);
+                            await deleteAnnouncementAction(ann.id);
                           }}
                         >
                           <Button

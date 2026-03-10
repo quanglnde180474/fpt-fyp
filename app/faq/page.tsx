@@ -1,18 +1,14 @@
-import { neon } from "@neondatabase/serverless";
+import { getPublishedFaqs } from "@/lib/services/faqs.service";
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { FaqList } from "./faq-list";
 
-const sql = neon(process.env.DATABASE_URL!);
+export const dynamic = "force-dynamic";
 
 export default async function FAQPage() {
   let faqs: any[] = [];
   try {
-    faqs = await sql`
-      SELECT * FROM faqs 
-      WHERE category != 'qna'
-      ORDER BY category, "order" ASC
-    `;
+    faqs = (await getPublishedFaqs()) as any[];
   } catch (e) {
     console.error("Error fetching FAQs:", e);
   }
@@ -21,7 +17,6 @@ export default async function FAQPage() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      {/* Page Header */}
       <div className="border-b border-border bg-muted/30 px-4 py-12 sm:px-6 lg:px-8">
         <div className="container mx-auto">
           <h1 className="text-4xl font-bold text-foreground mb-4">
@@ -35,7 +30,6 @@ export default async function FAQPage() {
 
       <FaqList faqs={faqs} />
 
-      {/* CTA */}
       <section className="px-4 py-16 sm:px-6 lg:px-8 bg-muted/30">
         <div className="container mx-auto max-w-3xl text-center">
           <h2 className="text-2xl font-bold text-foreground mb-4">

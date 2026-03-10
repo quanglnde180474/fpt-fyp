@@ -1,9 +1,9 @@
 import { Header } from "@/components/header";
-import { neon } from "@neondatabase/serverless";
+import { getPublishedPages } from "@/lib/services/pages.service";
 import Link from "next/link";
 import { FileText, ChevronRight } from "lucide-react";
 
-const sql = neon(process.env.DATABASE_URL!);
+export const dynamic = "force-dynamic";
 
 const CATEGORY_LABELS: Record<string, string> = {
   docs: "Tài liệu & Hướng dẫn",
@@ -11,29 +11,13 @@ const CATEGORY_LABELS: Record<string, string> = {
   guide: "Hướng dẫn",
 };
 
-async function getPublishedPages() {
+export default async function StudentPortal() {
+  let pagesByCategory: Record<string, any[]> = {};
   try {
-    const rows = await sql`
-      SELECT id, title, slug, category, "updatedAt"
-      FROM pages
-      WHERE published = true
-      ORDER BY category, "updatedAt" DESC
-    `;
-    const grouped: Record<string, typeof rows> = {};
-    for (const row of rows) {
-      const cat = row.category as string;
-      if (!grouped[cat]) grouped[cat] = [];
-      grouped[cat].push(row);
-    }
-    return grouped;
+    pagesByCategory = await getPublishedPages();
   } catch (error) {
     console.error("Error fetching pages:", error);
-    return {};
   }
-}
-
-export default async function StudentPortal() {
-  const pagesByCategory = await getPublishedPages();
   const categories = Object.keys(pagesByCategory);
 
   return (
